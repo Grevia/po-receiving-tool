@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開箱工具 - 功能選單</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>開箱工具</h1>
+            <p>功能選單</p>
+            <div class="user-info">
+                <span id="currentUser">載入中...</span>
+            </div>
+        </header>
+        
+        <main class="main-content">
+            <div class="function-grid">
+                <div class="function-card" onclick="goToFunction('po-header')">
+                    <div class="function-icon">📋</div>
+                    <h3>採購單管理</h3>
+                    <p>查看和管理採購單資料</p>
+                    <div class="function-details">
+                        <ul>
+                            <li>採購單號查詢</li>
+                            <li>採購日期管理</li>
+                            <li>採購對象資訊</li>
+                            <li>進貨總數統計</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="function-card" onclick="goToFunction('receiving-confirm')">
+                    <div class="function-icon">📦</div>
+                    <h3>到貨確認</h3>
+                    <p>記錄序號和比對到貨數量</p>
+                    <div class="function-details">
+                        <ul>
+                            <li>採購單號驗證</li>
+                            <li>序號掃描記錄</li>
+                            <li>商品分類管理</li>
+                            <li>批號自動生成</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="back-section">
+                <button class="btn btn-secondary" onclick="goBack()">
+                    ← 返回選擇人員
+                </button>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>&copy; 2024 開箱工具系統</p>
+        </footer>
+    </div>
+    
+    <script src="function-menu.js"></script>
+</body>
+</html>

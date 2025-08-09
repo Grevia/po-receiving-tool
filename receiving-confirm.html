@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開箱工具 - 到貨確認</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>到貨確認</h1>
+            <p>記錄序號和比對到貨數量</p>
+            <div class="user-info">
+                <span id="currentUser">載入中...</span>
+            </div>
+        </header>
+        
+        <main class="main-content">
+            <div class="card">
+                <!-- 採購單號查詢區域 -->
+                <div class="po-search-section">
+                    <h3>步驟 1：採購單號查詢</h3>
+                    <div class="form-group">
+                        <label for="poSearchInput" class="label">採購單號：</label>
+                        <div class="search-wrapper">
+                            <input type="text" id="poSearchInput" class="search-input" placeholder="輸入採購單號...">
+                            <button id="poSearchBtn" class="btn btn-primary">查詢</button>
+                        </div>
+                    </div>
+                    
+                    <div id="poInfo" class="po-info hidden">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>採購單號：</label>
+                                <span id="poNumber"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>採購對象：</label>
+                                <span id="poSupplier"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>應到貨台數：</label>
+                                <span id="expectedQuantity"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>已上傳筆數：</label>
+                                <span id="uploadedCount"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 商品分類選擇區域 -->
+                <div class="category-section">
+                    <h3>步驟 2：選擇商品分類</h3>
+                    <div class="form-group">
+                        <label for="categorySelect" class="label">商品分類：</label>
+                        <div class="select-wrapper">
+                            <select id="categorySelect" class="select">
+                                <option value="">請選擇商品分類</option>
+                                <option value="手機">手機</option>
+                                <option value="平板">平板</option>
+                                <option value="筆電">筆電</option>
+                                <option value="手錶">手錶</option>
+                                <option value="螢幕">螢幕</option>
+                                <option value="遊戲機">遊戲機</option>
+                                <option value="其他">其他</option>
+                            </select>
+                            <div class="select-arrow">▼</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 序號掃描區域 -->
+                <div class="scanning-section">
+                    <h3>步驟 3：序號掃描</h3>
+                    <div class="scanning-controls">
+                        <div class="form-group">
+                            <label for="serialInput" class="label">商品序號：</label>
+                            <div class="scan-wrapper">
+                                <input type="text" id="serialInput" class="scan-input" placeholder="掃描或輸入序號...">
+                                <button id="addSerialBtn" class="btn btn-primary">新增</button>
+                            </div>
+                        </div>
+                        
+                        <div class="counter-display">
+                            <span>已掃描：</span>
+                            <span id="scannedCount" class="count-number">0</span>
+                            <span>台</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 序號列表區域 -->
+                <div class="serial-list-section">
+                    <h3>序號列表</h3>
+                    <div class="table-container">
+                        <table id="serialTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>採購單號</th>
+                                    <th>商品分類</th>
+                                    <th>商品序號</th>
+                                    <th>商品批號</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="serialTableBody">
+                                <tr>
+                                    <td colspan="5" class="no-data">尚未掃描序號</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- 上傳按鈕區域 -->
+                <div class="upload-section">
+                    <button id="uploadBtn" class="btn btn-primary" disabled>
+                        上傳資料
+                    </button>
+                </div>
+                
+                <!-- 載入和錯誤區域 -->
+                <div class="loading-section">
+                    <div id="loadingIndicator" class="loading hidden">
+                        <div class="spinner"></div>
+                        <p>正在處理...</p>
+                    </div>
+                </div>
+                
+                <div class="error-section">
+                    <div id="errorMessage" class="error hidden">
+                        <!-- 錯誤訊息將在這裡顯示 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="navigation-section">
+                <button class="btn btn-secondary" onclick="goBack()">
+                    ← 返回功能選單
+                </button>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>&copy; 2024 開箱工具系統</p>
+        </footer>
+    </div>
+    
+    <script src="receiving-confirm.js"></script>
+</body>
+</html>
