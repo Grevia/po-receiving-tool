@@ -19,6 +19,9 @@ const SHEET_NAMES = {
  */
 function processReceivingConfirm(data) {
   try {
+    // 記錄接收到的資料，方便除錯
+    Logger.log('接收到的資料：' + JSON.stringify(data));
+    
     const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
     const sheet = spreadsheet.getSheetByName(SHEET_NAMES.RECEIVING_CONFIRM);
     
@@ -107,12 +110,12 @@ function validateReceivingData(data) {
     };
   }
   
-  // 驗證採購單號格式
-  if (!/^PO\d{8}$/.test(data.poNumber)) {
+  // 驗證採購單號格式 - 接受兩種格式：11位數字 或 PO+8位數字
+  if (!(/^\d{11}$/.test(data.poNumber) || /^PO\d{8}$/.test(data.poNumber))) {
     return {
       isValid: false,
       error: 'INVALID_PO_NUMBER',
-      message: '採購單號格式不正確，應為 PO + 8位數字'
+      message: '採購單號格式不正確，應為11位數字或PO+8位數字'
     };
   }
   
@@ -135,15 +138,19 @@ function validateReceivingData(data) {
  * @returns {Object} 檢查結果
  */
 function checkDuplicateSerialNumber(sheet, serialNumber) {
-  const data = sheet.getDataRange().getValues();
-  const serialColumnIndex = 6; // G欄是序號欄位
+  // 只讀取 G 欄（序號欄位）和相關欄位，提高效能
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return { isDuplicate: false }; // 只有標題行或空表
   
-  for (let i = 1; i < data.length; i++) { // 跳過標題行
+  const serialColumnIndex = 6; // G欄是序號欄位（0-based index）
+  const data = sheet.getRange(2, 1, lastRow - 1, 7).getValues(); // 從第2行開始，讀取7欄
+  
+  for (let i = 0; i < data.length; i++) {
     if (data[i][serialColumnIndex] === serialNumber) {
       return {
         isDuplicate: true,
         existingData: {
-          row: i + 1,
+          row: i + 2, // 實際行號（跳過標題行）
           poNumber: data[i][0],
           employeeName: data[i][1],
           date: data[i][2],
@@ -178,20 +185,23 @@ function generateBatchNumber() {
  */
 function logOperation(operation, data) {
   try {
-    const logSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName('操作日誌');
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let logSheet = ss.getSheetByName('操作日誌');
     if (!logSheet) {
-      // 如果沒有日誌工作表，創建一個
-      createLogSheet();
+      logSheet = ss.insertSheet('操作日誌');
+      const headers = ['時間戳', '操作類型', '操作人員', '操作資料', '使用者'];
+      logSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      logSheet.getRange(1, 1, 1, headers.length).setFontWeight('bold')
+              .setBackground('#4285f4').setFontColor('white');
+      logSheet.autoResizeColumns(1, headers.length);
     }
-    
     const logData = [
-      new Date(),           // 時間戳
-      operation,            // 操作類型
-      data.employeeName || 'SYSTEM', // 操作人員
-      JSON.stringify(data), // 操作資料
-      Session.getActiveUser().getEmail() || 'UNKNOWN' // 使用者
+      new Date(),
+      operation,
+      (data && data.employeeName) || 'SYSTEM',
+      JSON.stringify(data || {}),
+      (Session.getActiveUser() && Session.getActiveUser().getEmail()) || 'UNKNOWN'
     ];
-    
     logSheet.appendRow(logData);
   } catch (error) {
     console.error('記錄操作日誌失敗：', error);
@@ -390,65 +400,107 @@ function testFunctions() {
 
 /**
  * 建立網頁應用程式的 doGet 函數
- * @returns {HtmlOutput} HTML 輸出
+ * 支援 action 參數，回傳 JSON 資料
+ * @param {Object} e - 請求物件
+ * @returns {TextOutput} JSON 格式的回應或 HTML 頁面
  */
-function doGet() {
-  return HtmlService.createHtmlOutput(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <base target="_top">
-      <meta charset="UTF-8">
-      <title>開箱工具系統 - Google Apps Script</title>
-      <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .function-list { list-style: none; padding: 0; }
-        .function-list li { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
-        .function-list li:hover { background-color: #f5f5f5; }
-        .test-button { background-color: #4285f4; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
-        .test-button:hover { background-color: #3367d6; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>📦 開箱工具系統</h1>
-          <p>Google Apps Script 後端服務</p>
-        </div>
-        
-        <h2>可用功能</h2>
-        <ul class="function-list">
-          <li><strong>processReceivingConfirm(data)</strong> - 處理到貨確認資料上傳</li>
-          <li><strong>queryPurchaseOrder(poNumber)</strong> - 查詢採購單資料</li>
-          <li><strong>queryEmployee(employeeId)</strong> - 查詢員工資料</li>
-          <li><strong>getAllEmployees()</strong> - 取得所有員工列表</li>
-          <li><strong>validateReceivingData(data)</strong> - 驗證到貨確認資料</li>
-        </ul>
-        
-        <button class="test-button" onclick="testBackend()">測試後端功能</button>
-        
-        <div id="test-results" style="margin-top: 20px; padding: 10px; background-color: #f0f0f0; border-radius: 5px; display: none;">
-          <h3>測試結果</h3>
-          <pre id="test-output"></pre>
-        </div>
-      </div>
-      
-      <script>
-        function testBackend() {
-          const resultsDiv = document.getElementById('test-results');
-          const outputDiv = document.getElementById('test-output');
-          
-          resultsDiv.style.display = 'block';
-          outputDiv.textContent = '測試中...';
-          
-          // 這裡可以調用 Google Apps Script 函數
-          // 注意：需要設定適當的權限和部署設定
-          outputDiv.textContent = '測試完成！請查看 Google Apps Script 控制台輸出。';
-        }
-      </script>
-    </body>
-    </html>
-  `);
+function doGet(e) {
+  const action = (e && e.parameter && e.parameter.action || '').trim();
+  if (!action) {
+    // 沒 action 時回一個健康檢查頁，避免手動打開看到空白
+    return HtmlService.createHtmlOutput('OK');
+  }
+  switch (action) {
+    case 'getOpeners':
+      return json(getOpenersForDropdown());
+    case 'getPOHeaders':
+      return json(getPOHeadersLite());
+    case 'getPOInfo':
+      return json(queryPurchaseOrder(String(e.parameter.po || '')));
+    default:
+      return json({ success: false, error: 'UNKNOWN_ACTION', action }, 400);
+  }
+}
+
+/**
+ * 回傳 JSON 格式的輔助函數
+ * @param {Object} obj - 要回傳的物件
+ * @param {number} code - HTTP 狀態碼（可選）
+ * @returns {TextOutput} JSON 格式的回應
+ */
+function json(obj, code) {
+  const out = ContentService.createTextOutput(JSON.stringify(obj));
+  out.setMimeType(ContentService.MimeType.JSON);
+  return out; // Apps Script Web App 不支援隨意設 header，但這樣即可跨網域讀 JSON
+}
+
+/**
+ * 取得開箱人員下拉選單資料
+ * 前端友善的函數，回傳員工姓名列表
+ * @returns {Object} 包含開箱人員列表的物件
+ */
+function getOpenersForDropdown() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sh = ss.getSheetByName(SHEET_NAMES.EMPLOYEES);
+  if (!sh) return { openers: [] };
+  const last = sh.getLastRow();
+  const names = last >= 2 ? sh.getRange(2, 2, last - 1, 1).getValues().flat().filter(Boolean) : [];
+  return { openers: names };
+}
+
+/**
+ * 取得採購單標題簡化資料
+ * 前端友善的函數，回傳採購單基本資訊
+ * @returns {Object} 包含採購單列表的物件
+ */
+function getPOHeadersLite() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sh = ss.getSheetByName(SHEET_NAMES.PO_HEADER);
+  if (!sh) return { items: [] };
+  const last = sh.getLastRow();
+  const rows = last >= 2 ? sh.getRange(2, 1, last - 1, 20).getValues() : [];
+  const items = rows.map(r => ({
+    poNo: r[0],
+    date: r[1],
+    vendor: r[2],
+    qty: Number(r[19] || 0)
+  })).filter(x => x.poNo);
+  return { items };
+}
+
+/**
+ * 處理 POST 請求的函數
+ * 用於接收前端傳送的資料並處理到貨確認
+ * @param {Object} e - 請求物件
+ * @returns {TextOutput} JSON 格式的回應
+ */
+function doPost(e) {
+  try {
+    const body = e && e.postData && e.postData.contents ? JSON.parse(e.postData.contents) : {};
+    const result = processReceivingConfirm(body);
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    const res = { success: false, error: 'BAD_REQUEST', message: String(err) };
+    return ContentService.createTextOutput(JSON.stringify(res))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * 測試上傳功能的函數
+ * 在 Google Apps Script 編輯器中直接執行此函數進行測試
+ */
+function testUpload() {
+  const sample = {
+    poNumber: '20250721001',
+    employeeName: '測試員工',
+    productCategory: '手機',
+    productName: '測試機',
+    serialNumber: 'TEST-' + Math.floor(Math.random() * 1e6),
+    quantity: 1,
+    notes: 'from test'
+  };
+  const res = processReceivingConfirm(sample);
+  Logger.log(res);
 }
