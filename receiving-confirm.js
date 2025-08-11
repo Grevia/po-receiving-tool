@@ -502,12 +502,11 @@ function prepareUploadData() {
 
 // 上傳到 Google Sheets
 async function uploadToGoogleSheets(data) {
-    // 請將此 URL 替換為您的 Google Apps Script Web App URL
-    // 設定說明請參考 SETUP_INSTRUCTIONS.md
+    // Google Apps Script Web App URL - 已更新為最新部署
     const webAppUrl = 'https://script.google.com/macros/s/AKfycbwZK7QwE-7vKW81wyrLTNOcMGtN7EVACYa9uIZ3hwrAjdE9CD8rpIfj_Esg-eAfzzogBA/exec';
     
     // 檢查是否已設定 Web App URL
-    if (webAppUrl === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {
+    if (!webAppUrl || webAppUrl.includes('YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL')) {
         console.warn('未設定 Google Apps Script Web App URL，使用模擬上傳');
         return simulateUpload(data);
     }
