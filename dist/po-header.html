@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開箱工具 - 採購單管理</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>採購單管理</h1>
+            <p>查看和管理採購單資料</p>
+            <div class="user-info">
+                <span id="currentUser">載入中...</span>
+            </div>
+        </header>
+        
+        <main class="main-content">
+            <div class="card">
+                <div class="search-section">
+                    <div class="form-group">
+                        <label for="poSearch" class="label">採購單號查詢：</label>
+                        <div class="search-wrapper">
+                            <input type="text" id="poSearch" class="search-input" placeholder="輸入採購單號...">
+                            <button id="searchBtn" class="btn btn-primary">查詢</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-section">
+                    <div id="poData" class="po-data hidden">
+                        <h3>採購單詳細資訊</h3>
+                        <div class="data-grid">
+                            <div class="data-item">
+                                <label>採購單號：</label>
+                                <span id="poNumber"></span>
+                            </div>
+                            <div class="data-item">
+                                <label>採購日期：</label>
+                                <span id="poDate"></span>
+                            </div>
+                            <div class="data-item">
+                                <label>採購對象：</label>
+                                <span id="poSupplier"></span>
+                            </div>
+                            <div class="data-item">
+                                <label>進貨總數：</label>
+                                <span id="poQuantity"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-section">
+                    <h3>採購單列表</h3>
+                    <div class="table-container">
+                        <table id="poTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>採購單號</th>
+                                    <th>採購日期</th>
+                                    <th>採購對象</th>
+                                    <th>進貨總數</th>
+                                </tr>
+                            </thead>
+                            <tbody id="poTableBody">
+                                <tr>
+                                    <td colspan="4" class="loading-text">載入中...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="loading-section">
+                    <div id="loadingIndicator" class="loading hidden">
+                        <div class="spinner"></div>
+                        <p>正在載入採購單資料...</p>
+                    </div>
+                </div>
+                
+                <div class="error-section">
+                    <div id="errorMessage" class="error hidden">
+                        <!-- 錯誤訊息將在這裡顯示 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="navigation-section">
+                <button class="btn btn-secondary" onclick="goBack()">
+                    ← 返回功能選單
+                </button>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>&copy; 2024 開箱工具系統</p>
+        </footer>
+    </div>
+    
+    <script src="po-header.js"></script>
+</body>
+</html>

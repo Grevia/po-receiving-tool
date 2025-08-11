@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets 連線測試</title>
+    <style>
+        body {
+            font-family: 'Noto Sans TC', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .button {
+            background-color: #4285f4;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        .button:hover {
+            background-color: #3367d6;
+        }
+        .button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.connected {
+            background-color: #28a745;
+            color: white;
+        }
+        .status.disconnected {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 Google Sheets 連線測試</h1>
+            <p>測試開箱工具系統與 Google Sheets 的連線狀態</p>
+            <div>
+                <span class="status" id="connectionStatus">未連線</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>1. 基本連線測試</h3>
+            <p>測試與 Google Apps Script 的基本連線</p>
+            <button class="button" onclick="testBasicConnection()">測試基本連線</button>
+            <div id="basicConnectionResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. 員工資料查詢測試</h3>
+            <p>測試從 Google Sheets 查詢員工資料</p>
+            <button class="button" onclick="testEmployeeQuery()">測試員工查詢</button>
+            <div id="employeeQueryResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 採購單查詢測試</h3>
+            <p>測試從 Google Sheets 查詢採購單資料</p>
+            <input type="text" id="poNumberInput" placeholder="輸入採購單號 (例如: PO20240801)" style="padding: 8px; margin: 10px 0; width: 300px;">
+            <br>
+            <button class="button" onclick="testPOQuery()">測試採購單查詢</button>
+            <div id="poQueryResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. 資料上傳測試</h3>
+            <p>測試上傳到貨確認資料到 Google Sheets</p>
+            <button class="button" onclick="testDataUpload()">測試資料上傳</button>
+            <div id="dataUploadResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. 完整功能測試</h3>
+            <p>執行所有測試項目</p>
+            <button class="button" onclick="runAllTests()">執行所有測試</button>
+            <div id="allTestsResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script src="google-sheets-client.js"></script>
+    <script>
+        let sheetsManager = null;
+
+        // 頁面載入時初始化
+        window.addEventListener('load', async function() {
+            console.log('頁面載入完成，開始初始化 Google Sheets 管理器...');
+            await initializeManager();
+        });
+
+        // 初始化 Google Sheets 管理器
+        async function initializeManager() {
+            try {
+                sheetsManager = new GoogleSheetsManager(GOOGLE_APPS_SCRIPT_URL);
+                const initialized = await sheetsManager.initialize();
+                
+                if (initialized) {
+                    updateConnectionStatus(true);
+                    console.log('Google Sheets 管理器初始化成功');
+                } else {
+                    updateConnectionStatus(false);
+                    console.log('Google Sheets 管理器初始化失敗');
+                }
+            } catch (error) {
+                updateConnectionStatus(false);
+                console.error('初始化時發生錯誤：', error);
+            }
+        }
+
+        // 更新連線狀態
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connectionStatus');
+            if (connected) {
+                statusElement.textContent = '已連線';
+                statusElement.className = 'status connected';
+            } else {
+                statusElement.textContent = '未連線';
+                statusElement.className = 'status disconnected';
+            }
+        }
+
+        // 測試基本連線
+        async function testBasicConnection() {
+            const resultDiv = document.getElementById('basicConnectionResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '測試中...';
+
+            try {
+                if (!sheetsManager) {
+                    throw new Error('Google Sheets 管理器尚未初始化');
+                }
+
+                const testResult = await sheetsManager.testConnection();
+                
+                if (testResult.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ 連線成功！\n\n回應訊息: ${testResult.message}\n時間: ${new Date().toLocaleString()}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ 連線失敗！\n\n錯誤類型: ${testResult.error}\n錯誤訊息: ${testResult.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 測試時發生錯誤！\n\n錯誤訊息: ${error.message}`;
+                }
+        }
+
+        // 測試員工查詢
+        async function testEmployeeQuery() {
+            const resultDiv = document.getElementById('employeeQueryResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '查詢中...';
+
+            try {
+                if (!sheetsManager) {
+                    throw new Error('Google Sheets 管理器尚未初始化');
+                }
+
+                const employees = await sheetsManager.getAllEmployees();
+                
+                if (employees.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ 員工查詢成功！\n\n找到 ${employees.count} 名員工\n\n員工列表:\n${JSON.stringify(employees.data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ 員工查詢失敗！\n\n錯誤類型: ${employees.error}\n錯誤訊息: ${employees.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 查詢時發生錯誤！\n\n錯誤訊息: ${error.message}`;
+            }
+        }
+
+        // 測試採購單查詢
+        async function testPOQuery() {
+            const poNumber = document.getElementById('poNumberInput').value.trim();
+            if (!poNumber) {
+                alert('請輸入採購單號');
+                return;
+            }
+
+            const resultDiv = document.getElementById('poQueryResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = `查詢採購單 ${poNumber} 中...`;
+
+            try {
+                if (!sheetsManager) {
+                    throw new Error('Google Sheets 管理器尚未初始化');
+                }
+
+                const poResult = await sheetsManager.queryPurchaseOrder(poNumber);
+                
+                if (poResult.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ 採購單查詢成功！\n\n採購單號: ${poResult.data.poNumber}\n採購日期: ${poResult.data.purchaseDate}\n供應商: ${供應商}\n進貨總數: ${poResult.data.totalQuantity}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ 採購單查詢失敗！\n\n錯誤類型: ${poResult.error}\n錯誤訊息: ${poResult.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 查詢時發生錯誤！\n\n錯誤訊息: ${error.message}`;
+            }
+        }
+
+        // 測試資料上傳
+        async function testDataUpload() {
+            const resultDiv = document.getElementById('dataUploadResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '測試資料上傳中...';
+
+            try {
+                if (!sheetsManager) {
+                    throw new Error('Google Sheets 管理器尚未初始化');
+                }
+
+                // 測試資料
+                const testData = {
+                    poNumber: 'PO20240801',
+                    employeeName: '測試員工',
+                    productCategory: '電子產品',
+                    productName: '測試商品',
+                    serialNumber: 'TEST' + Date.now(), // 使用時間戳避免重複
+                    quantity: 1,
+                    notes: '這是一個測試記錄'
+                };
+
+                const uploadResult = await sheetsManager.uploadReceivingConfirm(testData);
+                
+                if (uploadResult.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ 資料上傳成功！\n\n批號: ${uploadResult.batchNumber}\n時間戳: ${uploadResult.timestamp}\n\n上傳的資料:\n${JSON.stringify(testData, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ 資料上傳失敗！\n\n錯誤類型: ${uploadResult.error}\n錯誤訊息: ${uploadResult.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 上傳時發生錯誤！\n\n錯誤訊息: ${error.message}`;
+            }
+        }
+
+        // 執行所有測試
+        async function runAllTests() {
+            const resultDiv = document.getElementById('allTestsResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '開始執行所有測試...\n\n';
+
+            try {
+                // 測試 1: 基本連線
+                resultDiv.textContent += '1. 測試基本連線...\n';
+                const connectionTest = await sheetsManager.testConnection();
+                resultDiv.textContent += connectionTest.success ? '✅ 成功\n' : '❌ 失敗\n';
+
+                // 測試 2: 員工查詢
+                resultDiv.textContent += '\n2. 測試員工查詢...\n';
+                const employeeTest = await sheetsManager.getAllEmployees();
+                resultDiv.textContent += employeeTest.success ? '✅ 成功\n' : '❌ 失敗\n';
+
+                // 測試 3: 採購單查詢
+                resultDiv.textContent += '\n3. 測試採購單查詢...\n';
+                const poTest = await sheetsManager.queryPurchaseOrder('PO20240801');
+                resultDiv.textContent += poTest.success ? '✅ 成功\n' : '❌ 失敗\n';
+
+                // 測試 4: 資料上傳
+                resultDiv.textContent += '\n4. 測試資料上傳...\n';
+                const testData = {
+                    poNumber: 'PO20240801',
+                    employeeName: '測試員工',
+                    productCategory: '電子產品',
+                    productName: '測試商品',
+                    serialNumber: 'TEST' + Date.now(),
+                    quantity: 1,
+                    notes: '完整測試記錄'
+                };
+                const uploadTest = await sheetsManager.uploadReceivingConfirm(testData);
+                resultDiv.textContent += uploadTest.success ? '✅ 成功\n' : '❌ 失敗\n';
+
+                resultDiv.textContent += '\n🎉 所有測試完成！';
+                resultDiv.className = 'result success';
+
+            } catch (error) {
+                resultDiv.textContent += `\n❌ 執行測試時發生錯誤：${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>

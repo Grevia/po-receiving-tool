@@ -67,7 +67,7 @@ employee-selector-app/
 ## Google Sheets 設定
 
 應用程式會自動讀取以下 Google Sheets：
-- **試算表 ID**: `1KWIWFtGa362uoIbGbgVmPFAFkHj0GOM7--ixdydCixI`
+- **試算表 ID**: `1tRyu-k-XwIeXL1m7iz3dQoFVCm1pOTUGC374LBzaXZQ`
 - **工作表名稱**: 
   - `員工名冊` - 開箱人員資料
   - `po_header` - 採購單資料

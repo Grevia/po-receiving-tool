@@ -1,7 +1,7 @@
 // 到貨確認 JavaScript
 
 // Google Sheets 設定
-const SHEET_ID = '1tRyu-k-XwIeXL1m7iz3dQoFVCm1pOTUGC374LBzaXZQ';
+const SHEET_ID = '1KWIWFtGa362uoIbGbgVmPFAFkHj0GOM7--ixdydCixI';
 const PO_HEADER_SHEET = 'po_header';
 const SUPPLIER_CONTACTS_SHEET = 'supplier_contacts';
 const RECEIVING_CONFIRM_SHEET = 'receiving_confirm';
@@ -504,7 +504,7 @@ function prepareUploadData() {
 async function uploadToGoogleSheets(data) {
     // 請將此 URL 替換為您的 Google Apps Script Web App URL
     // 設定說明請參考 SETUP_INSTRUCTIONS.md
-    const webAppUrl = 'https://script.google.com/macros/s/AKfycbwZK7QwE-7vKW81wyrLTNOcMGtN7EVACYa9uIZ3hwrAjdE9CD8rpIfj_Esg-eAfzzogBA/exec';
+    const webAppUrl = 'https://script.google.com/macros/s/AKfycby0pGGwWxxn56XoRzQ9nVViH3qb_taSf4lh2r_TgHPusM93gyy_1XG1dDxLVtz9ti0CEQ/exec';
     
     // 檢查是否已設定 Web App URL
     if (webAppUrl === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL') {

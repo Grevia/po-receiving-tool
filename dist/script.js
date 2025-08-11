@@ -1,5 +1,5 @@
 // Google Sheets 設定
-const SHEET_ID = '1tRyu-k-XwIeXL1m7iz3dQoFVCm1pOTUGC374LBzaXZQ';
+const SHEET_ID = '1KWIWFtGa362uoIbGbgVmPFAFkHj0GOM7--ixdydCixI';
 const SHEET_NAME = '員工名冊';
 const COLUMN_B = 'B'; // B 欄位
 

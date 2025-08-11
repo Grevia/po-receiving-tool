@@ -1,7 +1,7 @@
 // 採購單管理 JavaScript
 
 // Google Sheets 設定
-const SHEET_ID = '1tRyu-k-XwIeXL1m7iz3dQoFVCm1pOTUGC374LBzaXZQ';
+const SHEET_ID = '1KWIWFtGa362uoIbGbgVmPFAFkHj0GOM7--ixdydCixI';
 const SHEET_NAME = 'po_header';
 
 // DOM 元素

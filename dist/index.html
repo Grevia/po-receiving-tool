@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開箱工具</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>開箱工具</h1>
+            <p>選擇開箱人員並進入功能選單</p>
+        </header>
+        
+        <main class="main-content">
+            <div class="card">
+                <div class="form-group">
+                    <label for="employeeSelect" class="label">選擇開箱人員：</label>
+                    <div class="select-wrapper">
+                        <select id="employeeSelect" class="select">
+                            <option value="">載入中...</option>
+                        </select>
+                        <div class="select-arrow">▼</div>
+                    </div>
+                </div>
+                
+                <div class="button-section">
+                    <button id="openBoxBtn" class="btn btn-primary" disabled>
+                        開箱
+                    </button>
+                </div>
+                
+                <div class="info-section">
+                    <div id="selectedInfo" class="selected-info hidden">
+                        <h3>已選擇的員工</h3>
+                        <div id="employeeDetails" class="employee-details">
+                            <!-- 員工詳細資訊將在這裡顯示 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="loading-section">
+                    <div id="loadingIndicator" class="loading hidden">
+                        <div class="spinner"></div>
+                        <p>正在載入員工資料...</p>
+                    </div>
+                </div>
+                
+                <div class="error-section">
+                    <div id="errorMessage" class="error hidden">
+                        <!-- 錯誤訊息將在這裡顯示 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>&copy; 2024 開箱工具系統</p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
