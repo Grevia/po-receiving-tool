@@ -487,16 +487,15 @@ async function uploadData() {
 // 準備上傳資料
 function prepareUploadData() {
     const selectedEmployee = localStorage.getItem('selectedEmployee');
-    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 格式
     
     return scannedSerials.map(item => ({
-        poNumber: item.poNumber,           // A 欄位：採購單號
-        employee: selectedEmployee,        // B 欄位：開箱人員
-        date: currentDate,                 // C 欄位：開箱日期
-        batchNumber: item.batchNumber,     // D 欄位：商品批號
-        category: item.category,           // E 欄位：商品分類
-        productName: '',                   // F 欄位：商品名稱（空白）
-        serial: item.serial                // G 欄位：商品序號
+        poNumber: item.poNumber,           // 採購單號
+        employeeName: selectedEmployee,    // 開箱人員 (修正欄位名稱)
+        productCategory: item.category,    // 商品分類 (修正欄位名稱)
+        productName: item.category,        // 商品名稱 (使用分類作為名稱)
+        serialNumber: item.serial,         // 商品序號 (修正欄位名稱)
+        quantity: 1,                       // 數量 (預設為1)
+        notes: ''                          // 備註
     }));
 }
 
@@ -517,11 +516,7 @@ async function uploadToGoogleSheets(data) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                action: 'uploadReceivingData',
-                data: data,
-                sheetId: SHEET_ID
-            })
+            body: JSON.stringify(data)  // 直接傳送資料，不需要包裝
         });
         
         if (!response.ok) {
